@@ -6,6 +6,7 @@
 
 
 #include <stdlib.h>
+#include <stdio.h>
 
 // Function prototypes
 void mainMenu();
@@ -22,7 +23,7 @@ void genaratereport();
 
 
 int main() {
-    mainMenu();  
+    start();  
     return 0;
 }
 
@@ -55,7 +56,7 @@ void start() {
 "================================================\n");
 
         printf("Enter your choice: ");
-        scanf(" %c, &choice");
+        scanf(" %c", &choice);
 
         switch (choice) {
             case '1':
@@ -181,17 +182,17 @@ void AdminMenu() {
 "================================================\n");
 
         printf("Enter your choice: ");
-        scanf(" %c, &choice");
+        scanf(" %c", &choice);
 
         switch (choice) {
             case '1':
-                busmanagment();
+                printf("Feature not implemented yet.\n\n");
                 break;
             case '2':
-                usagemonitoring();
+                printf("Feature not implemented yet.\n\n");
                 break;
             case '3':
-                genaratereport();
+                printf("Feature not implemented yet.\n\n");
             case '4':
                 exit(0);
             default:

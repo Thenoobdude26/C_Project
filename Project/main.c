@@ -1,43 +1,23 @@
 #include <stdio.h>
-#include <stdlib.h>
-#include <pthread.h>
-#include <time.h>
-#include <unistd.h>
+
+// DO NOT PUSH TO MAIN OR PROJECT, PUSH TO C TESTING FIRST
 
 // Function prototypes
 void mainMenu();
 void bookTicket();
 void viewSchedule();
 void cancelTicket();
-void* updateClock(void* arg);
 
 int main() {
-    pthread_t clockThread;
-    pthread_create(&clockThread, NULL, updateClock, NULL);
     mainMenu();  
-    pthread_cancel(clockThread);
-    pthread_join(clockThread, NULL);
     return 0;
-}
-
-// Function to update the clock
-void* updateClock(void* arg) {
-    while (1) {
-        time_t now;
-        time(&now);
-        struct tm* local = localtime(&now);
-        printf("\rCurrent Time: %02d:%02d:%02d", local->tm_hour, local->tm_min, local->tm_sec);
-        fflush(stdout);
-        sleep(1);
-    }
-    return NULL;
 }
 
 // Function to display the Main Menu
 void mainMenu() {
     char choice;
 
-    while (1) {
+    while (1) {  // Infinite loop, i don't remember the exact syntax for do-while loop
         printf(
 "             ⠀⣀⣠⣤⣶⣶⣾⣿⣿⠛⠛⠿⢶⣦⣄⡀⠀\n"
 "⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⣾⢛⣉⣉⡩⠤⣤⠄⠚⢃⣀⣴⢶⣦⡉⠻⢷⣤⡀\n"
@@ -61,8 +41,8 @@ void mainMenu() {
 "3. Cancel a Ticket                                \n"
 "4. Exit                                           \n"
 "================================================\n");
+        
 
-        printf("\033[K");  // Clear the current line
         printf("Enter your choice: ");
         scanf(" %c", &choice);  // Space before %c to remove whitespace
 
@@ -77,9 +57,10 @@ void mainMenu() {
                 cancelTicket();
                 break;
             case '4':
-                exit(0);
+                printf("Exiting...have a great day!\n");
+                return;
             default:
-                printf("Invalid choice. Please try again.\n");
+                printf("Invalid choice! Please try again.\n");
         }
     }
 }

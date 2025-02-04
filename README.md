@@ -55,6 +55,6 @@ cd bus-reservation-system
 
 ### 🔹 Compile & Run
 ```bash
-gcc bus_reservation.c -o bus_reservation
+gcc main.c -o bus_reservation
 ./bus_reservation
 ```

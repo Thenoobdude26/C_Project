@@ -14,7 +14,7 @@ void bookTicket();
 void viewSchedule();
 void cancelTicket();
 void start();
-void login();
+int login();
 void reg();
 void AdminMenu();
 void busmanagment();
@@ -23,16 +23,11 @@ void genaratereport();
 
 
 int main() {
-    start();  
-    return 0;
-}
-
-// Function to display the Startiing menu
-void start() {
     char choice;
-            while (1)
-            {
-                           printf(
+    int loggedIn = 0;
+    while  (!loggedIn){
+        
+        printf(
 "             ⠀⣀⣠⣤⣶⣶⣾⣿⣿⠛⠛⠿⢶⣦⣄⡀⠀\n"
 "⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⣾⢛⣉⣉⡩⠤⣤⠄⠚⢃⣀⣴⢶⣦⡉⠻⢷⣤⡀\n"
 "⠀⠀⣠⣤⣶⣶⣤⣤⣾⣯⠥⠴⠒⠒⠋⠉⠉⠉⠉⠉⢹⡏⠸⣟⡿⡶⠦⢌⡛⢷⣤⡀\n"
@@ -60,7 +55,7 @@ void start() {
 
         switch (choice) {
             case '1':
-                login();
+                loggedIn = login();// Make external files to handle passwords, users and authentication
                 break;
             case '2':
                 reg();
@@ -127,6 +122,7 @@ void mainMenu() {
 void bookTicket() {
     printf("\n--- Booking a Ticket ---\n");
     printf("Feature not implemented yet.\n\n");
+    return 1; // Simulate a successful login
 }
 
 // Function to handle schedule viewing
@@ -140,8 +136,8 @@ void cancelTicket() {
     printf("\n--- Canceling a Ticket ---\n");
     printf("Feature not implemented yet.\n\n");
 }
-
-void login() {
+int login() {
+int login() {
     printf("\n--- Login Page ---\n");
     printf("Feature not implemented yet.\n\n");
 }

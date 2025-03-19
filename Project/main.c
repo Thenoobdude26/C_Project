@@ -1,7 +1,5 @@
 #include <stdio.h>
 
-// DO NOT PUSH TO MAIN OR PROJECT, PUSH TO C TESTING FIRST
-
 // Function prototypes
 void mainMenu();
 void bookTicket();

@@ -27,20 +27,19 @@ typedef struct {
 
 // Sample routes
 Route routes[MAX_ROUTES] = {
-    {"Maputo to Beira", "08:00 AM", 5},
-    {"Beira to Nampula", "10:30 AM", 3},
-    {"Nampula to Pemba", "01:00 PM", 4},
-    {"Pemba to Maputo", "04:45 PM", 2},
-    {"Maputo to Tete", "06:30 PM", 6}
+    {"KL to Penang", "07:00 AM", 5},
+    {"KL to Johor Bahru", "09:30 AM", 3},
+    {"KL to Kuantan", "12:00 PM", 4},
+    {"KL to Ipoh", "03:30 PM", 2},
+    {"KL to Melaka", "06:00 PM", 6}
 };
-
 // Booked tickets array
 Ticket tickets[MAX_TICKETS];
 int ticketCount = 0;
 
 // Function prototypes
 void mainMenu();
-void searchRoutes();
+void viewRoutes();
 void bookTicket();
 void cancelTicket();
 void displayTickets();
@@ -56,25 +55,10 @@ void mainMenu() {
 
     while (1) {
         printf(
-"             ⠀⣀⣠⣤⣶⣶⣾⣿⣿⠛⠛⠿⢶⣦⣄⡀⠀\n"
-"⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⣾⢛⣉⣉⡩⠤⣤⠄⠚⢃⣀⣴⢶⣦⡉⠻⢷⣤⡀\n"
-"⠀⠀⣠⣤⣶⣶⣤⣤⣾⣯⠥⠴⠒⠒⠋⠉⠉⠉⠉⠉⢹⡏⠸⣟⡿⡶⠦⢌⡛⢷⣤⡀\n"
-"⢀⡾⠋⣼⠿⢿⣶⠞⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣸⠁⢰⣟⢀⣰⠀⠀⠈⠙⣿⣿⣶⣄        \n"
-"⣾⠇⢰⡏⠀⣼⡏⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠸⠤⣞⡇⠀⢸⠀⠀⠀⠀⡟⡆⠹⡿⣿⣦⣀     \n"
-"⢹⣦⣾⠁⢰⡿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣇⠇⠀⢸⠀⠀⠀⠀⡇⡇⠀⡇⠀⢹⠻⣷⣤⡀ \n"
-"⠀⠉⠁⠀⣿⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⢼⠀⠀⢸⠀⠀⠀⣰⢃⡗⠢⢥⡀⠀⡇⠘⡝⣿ \n"
-"⠀⠀⠀⢸⡿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣸⠸⠀⠀⢸⣀⠤⠚⠁⢸⡁⠀⠀⠈⠷⠗⠤⣇⣻⡇\n"
-"⠀⠀⠀⣼⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⠃⢠⡠⠔⢻⠁⢀⣀⠤⠴⡧⣀⣀⢀⠀⡆⠀⠀⢹⡇\n"
-"⠀⠀⠀⣿⠳⠤⠤⢤⣀⠀⠀⠀⢀⣠⠤⠤⠤⠤⠔⠚⠁⠀⣠⡠⢤⣾⡯⠅⠒⠒⠒⡗⠒⠒⠼⠿⡷⠶⠶⢾⡇\n"
-"⠀⠀⠀⣿⣦⣄⠀⠀⠈⠉⠉⠉⠉⠀⠀⠀⠀⣀⣠⣤⡶⠿⣷⠊⠁⢀⠃⠀⢠⠟⣦⡇⠀⠀⠀⠀⠃⡶⡄⢸⡇\n"
-"⠀⠀⢸⣯⣈⣳⣭⣒⣤⣄⣀⣀⣤⣤⣶⣾⣽⣛⣉⣀⣀⡴⢻⠀⠀⠸⠀⠀⣿⡆⣹⡇⠀⠀⠀⡀⣆⡷⣧⣼⠇\n"
-"⠀⠀⠈⣷⠆⢠⠇⠀⢨⡟⠿⠯⢭⠀⠀⠈⢆⠀⠀⢠⡄⠀⢸⠀⠀⠀⠆⠀⡿⡀⢿⣧⣤⣴⡶⠿⣯⣴⠏⠁⠀\n"
-"⠀⠀⠀⠻⣶⣼⣦⣤⣤⣭⣭⣭⣭⣄⣀⣀⣈⣆⣀⣀⣀⣀⣼⣤⣤⡾⣶⡚⠁⢁⡿⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀\n"
-"⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠉⠉⠉⠉⠉⠉⠁⠀⠀⠀⠈⠙⠛⠋⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n"
 "     Welcome to the Bus Reservation System!       \n"
 "==================================================\n"
-"1. Search Routes & Schedules                      \n"
-"2.  Book a Ticket                                 \n"
+"1. View Routes & Schedules                      \n"
+"2. Book a Ticket                                 \n"
 "3. Cancel a Ticket                                \n"
 "4. View My Tickets                                \n"
 "5. Exit                                           \n"
@@ -84,7 +68,7 @@ void mainMenu() {
 
         switch (choice) {
             case '1':
-                searchRoutes();
+                viewRoutes();
                 break;
             case '2':
                 bookTicket();
@@ -105,7 +89,7 @@ void mainMenu() {
 }
 
 // Function to search and display available routes
-void searchRoutes() {
+void viewRoutes() {
     printf("\n--- Available Routes & Schedules ---\n");
     for (int i = 0; i < MAX_ROUTES; i++) {
         printf("%d. Route: %s | Time: %s | Seats Available: %d\n",
@@ -118,7 +102,7 @@ void bookTicket() {
     int routeChoice;
     char name[50];
 
-    searchRoutes();  // Show available routes
+    viewRoutes();  // Show available routes
     printf("\nEnter the route number to book: ");
     scanf("%d", &routeChoice);
 
@@ -177,7 +161,7 @@ void cancelTicket() {
     }
 }
 
-// Function to display booked tickets
+// display booked tickets
 void displayTickets() {
     if (ticketCount == 0) {
         printf("\nNo tickets booked yet.\n");

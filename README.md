@@ -47,14 +47,5 @@ A **Bus Reservation System** implemented in C, designed to simplify the process 
 - C Compiler (GCC recommended).  
 - Command-line terminal.  
 
-### 🔹 Clone the Repository  
-```bash
-git clone https://github.com/your-username/bus-reservation-system.git
-cd bus-reservation-system
-```
-
-### 🔹 Compile & Run
-```bash
-gcc main.c -o bus_reservation
-./bus_reservation
-```
+### Usage
+- ./bus_system

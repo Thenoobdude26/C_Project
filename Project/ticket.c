@@ -2,13 +2,8 @@
 #include <string.h>
 #include "common.h"
 
-Route routes[MAX_ROUTES] = {
-    {"KL to Penang", "07:00 AM", 5},
-    {"KL to Johor Bahru", "09:30 AM", 3},
-    {"KL to Kuantan", "12:00 PM", 4},
-    {"KL to Ipoh", "03:30 PM", 2},
-    {"KL to Melaka", "06:00 PM", 6}
-};
+Route routes[MAX_ROUTES];
+int routeCount = 0;  // Define here (shared with admin.c)
 Ticket tickets[MAX_TICKETS];
 int ticketCount = 0;
 
@@ -16,28 +11,13 @@ void mainMenu() {
     char choice;
     while (1) {
         printf(
-"             ⠀⣀⣠⣤⣶⣶⣾⣿⣿⠛⠛⠿⢶⣦⣄⡀⠀\n"
-"⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⣾⢛⣉⣉⡩⠤⣤⠄⠚⢃⣀⣴⢶⣦⡉⠻⢷⣤⡀\n"
-"⠀⠀⣠⣤⣶⣶⣤⣤⣾⣯⠥⠴⠒⠒⠋⠉⠉⠉⠉⠉⢹⡏⠸⣟⡿⡶⠦⢌⡛⢷⣤⡀\n"
-"⢀⡾⠋⣼⠿⢿⣶⠞⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣸⠁⢰⣟⢀⣰⠀⠀⠈⠙⣿⣿⣶⣄        \n"
-"⣾⠇⢰⡏⠀⣼⡏⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠸⠤⣞⡇⠀⢸⠀⠀⠀⠀⡟⡆⠹⡿⣿⣦⣀     \n"
-"⢹⣦⣾⠁⢰⡿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣇⠇⠀⢸⠀⠀⠀⠀⡇⡇⠀⡇⠀⢹⠻⣷⣤⡀ \n"
-"⠀⠉⠁⠀⣿⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⢼⠀⠀⢸⠀⠀⠀⣰⢃⡗⠢⢥⡀⠀⡇⠘⡝⣿ \n"
-"⠀⠀⠀⢸⡿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣸⠸⠀⠀⢸⣀⠤⠚⠁⢸⡁⠀⠀⠈⠷⠗⠤⣇⣻⡇\n"
-"⠀⠀⠀⣼⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⠃⢠⡠⠔⢻⠁⢀⣀⠤⠴⡧⣀⣀⢀⠀⡆⠀⠀⢹⡇\n"
-"⠀⠀⠀⣿⠳⠤⠤⢤⣀⠀⠀⠀⢀⣠⠤⠤⠤⠤⠔⠚⠁⠀⣠⡠⢤⣾⡯⠅⠒⠒⠒⡗⠒⠒⠼⠿⡷⠶⠶⢾⡇\n"
-"⠀⠀⠀⣿⣦⣄⠀⠀⠈⠉⠉⠉⠉⠀⠀⠀⠀⣀⣠⣤⡶⠿⣷⠊⠁⢀⠃⠀⢠⠟⣦⡇⠀⠀⠀⠀⠃⡶⡄⢸⡇\n"
-"⠀⠀⢸⣯⣈⣳⣭⣒⣤⣄⣀⣀⣤⣤⣶⣾⣽⣛⣉⣀⣀⡴⢻⠀⠀⠸⠀⠀⣿⡆⣹⡇⠀⠀⠀⡀⣆⡷⣧⣼⠇\n"
-"⠀⠀⠈⣷⠆⢠⠇⠀⢨⡟⠿⠯⢭⠀⠀⠈⢆⠀⠀⢠⡄⠀⢸⠀⠀⠀⠆⠀⡿⡀⢿⣧⣤⣴⡶⠿⣯⣴⠏⠁⠀\n"
-"⠀⠀⠀⠻⣶⣼⣦⣤⣤⣭⣭⣭⣭⣄⣀⣀⣈⣆⣀⣀⣀⣀⣼⣤⣤⡾⣶⡚⠁⢁⡿⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀\n"
-"⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠉⠉⠉⠉⠉⠉⠁⠀⠀⠀⠈⠙⠛⠋⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n"
 "     Welcome to the Bus Reservation System!       \n"
 "==================================================\n"
 "1. View Routes & Schedules                      \n"
 "2. Book a Ticket                                 \n"
 "3. Cancel a Ticket                                \n"
 "4. View My Tickets                                \n"
-"5. Exit                                           \n"
+"5. Exit to Main Menu                             \n"
 "==================================================\n");
         printf("Enter your choice: ");
         scanf(" %c", &choice);
@@ -47,7 +27,7 @@ void mainMenu() {
             case '2': bookTicket(); break;
             case '3': cancelTicket(); break;
             case '4': displayTickets(); break;
-            case '5': printf("Exiting... Have a great day!\n"); return;
+            case '5': printf("Returning to main menu...\n"); return;
             default: printf("Invalid choice! Please try again.\n");
         }
     }
@@ -55,36 +35,90 @@ void mainMenu() {
 
 void viewRoutes() {
     printf("\n--- Available Routes & Schedules ---\n");
-    for (int i = 0; i < MAX_ROUTES; i++) {
-        printf("%d. Route: %s | Time: %s | Seats Available: %d\n",
-               i + 1, routes[i].route, routes[i].time, routes[i].seatsAvailable);
+    if (routeCount == 0) {
+        printf("No routes available. Please contact an admin to add routes.\n");
+        return;
+    }
+    for (int i = 0; i < routeCount; i++) {
+        printf("Bus ID: %d | Route: %s | Time: %s | Seats Available: %d\n",
+               routes[i].id, routes[i].route, routes[i].time, routes[i].seatsAvailable);
     }
 }
 
 void bookTicket() {
     int routeChoice;
-    viewRoutes();
-    printf("\nEnter the route number to book: ");
-    scanf("%d", &routeChoice);
+    int userIndex = -1;
+    for (int i = 0; i < user_count; i++) {
+        if (strcmp(users[i].username, current_user) == 0) {
+            userIndex = i;
+            break;
+        }
+    }
 
-    if (routeChoice < 1 || routeChoice > MAX_ROUTES || routes[routeChoice - 1].seatsAvailable == 0) {
-        printf("Invalid choice or no seats available!\n");
+    if (userIndex != -1 && users[userIndex].frequentRouteCount > 0) {
+        printf("\nYour Frequent Routes:\n");
+        for (int i = 0; i < users[userIndex].frequentRouteCount; i++) {
+            printf("%d. %s\n", i + 1, users[userIndex].frequentRoutes[i]);
+        }
+        printf("0. Choose from all routes\n");
+        printf("Select a frequent route (or 0): ");
+        scanf("%d", &routeChoice);
+        if (routeChoice > 0 && routeChoice <= users[userIndex].frequentRouteCount) {
+            for (int i = 0; i < routeCount; i++) {
+                if (strcmp(routes[i].route, users[userIndex].frequentRoutes[routeChoice - 1]) == 0) {
+                    routeChoice = routes[i].id;
+                    break;
+                }
+            }
+        } else {
+            routeChoice = 0;
+        }
+    } else {
+        routeChoice = 0;
+    }
+
+    if (routeChoice == 0) {
+        viewRoutes();
+        if (routeCount == 0) return;
+        printf("\nEnter the route ID to book: ");
+        scanf("%d", &routeChoice);
+    }
+
+    int routeIndex = -1;
+    for (int i = 0; i < routeCount; i++) {
+        if (routes[i].id == routeChoice) {
+            routeIndex = i;
+            break;
+        }
+    }
+
+    if (routeIndex == -1 || routes[routeIndex].seatsAvailable == 0) {
+        printf("Invalid route ID or no seats available!\n");
         return;
     }
 
     Ticket newTicket;
-    strcpy(newTicket.name, current_user); // Use authenticated user
-    strcpy(newTicket.route, routes[routeChoice - 1].route);
-    strcpy(newTicket.time, routes[routeChoice - 1].time);
-    newTicket.seatNumber = routes[routeChoice - 1].seatsAvailable--;
+    strcpy(newTicket.name, current_user);
+    strcpy(newTicket.route, routes[routeIndex].route);
+    strcpy(newTicket.time, routes[routeIndex].time);
+    newTicket.seatNumber = routes[routeIndex].seatsAvailable--;
 
     tickets[ticketCount++] = newTicket;
+    FILE *file = fopen("tickets.txt", "w");
+    if (file) {
+        for (int i = 0; i < ticketCount; i++) {
+            fprintf(file, "%s %s %s %d\n", tickets[i].name, tickets[i].route, tickets[i].time, tickets[i].seatNumber);
+        }
+        fclose(file);
+    }
     printf("Booking successful! Your seat number is %d.\n", newTicket.seatNumber);
 }
 
 void cancelTicket() {
     int found = 0;
     displayTickets();
+    if (ticketCount == 0) return;
+
     printf("\nEnter ticket number to cancel (1-%d): ", ticketCount);
     int ticketNum;
     scanf("%d", &ticketNum);
@@ -93,7 +127,7 @@ void cancelTicket() {
     if (ticketNum >= 0 && ticketNum < ticketCount && strcmp(tickets[ticketNum].name, current_user) == 0) {
         printf("Ticket for %s on route %s at %s canceled.\n", 
                tickets[ticketNum].name, tickets[ticketNum].route, tickets[ticketNum].time);
-        for (int j = 0; j < MAX_ROUTES; j++) {
+        for (int j = 0; j < routeCount; j++) {
             if (strcmp(routes[j].route, tickets[ticketNum].route) == 0) {
                 routes[j].seatsAvailable++;
                 break;
@@ -103,9 +137,15 @@ void cancelTicket() {
             tickets[j] = tickets[j + 1];
         }
         ticketCount--;
-        found = 1;
-    }
-    if (!found) {
+        FILE *file = fopen("tickets.txt", "w");
+        if (file) {
+            for (int i = 0; i < ticketCount; i++) {
+                fprintf(file, "%s %s %s %d\n", tickets[i].name, tickets[i].route, tickets[i].time, tickets[i].seatNumber);
+            }
+            fclose(file);
+        }
+        printf("Ticket canceled successfully!\n");
+    } else {
         printf("No ticket found under your account or invalid ticket number.\n");
     }
 }

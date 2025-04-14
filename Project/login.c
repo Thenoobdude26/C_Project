@@ -1,11 +1,14 @@
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 #include "common.h"
 
 struct User users[MAX_USERS];
 int user_count = 0;
 char current_user[50];
-int current_user_is_admin = 0;  // Track if the logged-in user is an admin
+int current_user_is_admin = 0;
+Notification notifications[MAX_NOTIFICATIONS];  // Moved here from global scope
+int notificationCount = 0;  // Moved here from global scope
 
 void saveUsersToFile() {
     FILE *file = fopen("users.txt", "w");
@@ -35,6 +38,204 @@ void loadUsersFromFile() {
         user_count++;
     }
     fclose(file);
+}
+
+void saveNotificationsToFile() {
+    FILE *file = fopen("notifications.txt", "w");
+    if (file == NULL) {
+        printf("Error opening file for writing notifications!\n");
+        return;
+    }
+    for (int i = 0; i < notificationCount; i++) {
+        fprintf(file, "%s %s %ld %d\n", notifications[i].username, notifications[i].message,
+                notifications[i].timestamp, notifications[i].isRead);
+    }
+    fclose(file);
+}
+
+void loadNotificationsFromFile() {
+    FILE *file = fopen("notifications.txt", "r");
+    if (file == NULL) return;
+    while (fscanf(file, "%s %s %ld %d", notifications[notificationCount].username,
+                  notifications[notificationCount].message, &notifications[notificationCount].timestamp,
+                  &notifications[notificationCount].isRead) != EOF) {
+        notificationCount++;
+    }
+    fclose(file);
+}
+
+void addNotification(const char* username, const char* message) {
+    if (notificationCount >= MAX_NOTIFICATIONS) {
+        for (int i = 0; i < MAX_NOTIFICATIONS - 1; i++) {
+            notifications[i] = notifications[i + 1];
+        }
+        notificationCount--;
+    }
+
+    strcpy(notifications[notificationCount].username, username);
+    strcpy(notifications[notificationCount].message, message);
+    notifications[notificationCount].timestamp = time(NULL);
+    notifications[notificationCount].isRead = 0;
+    notificationCount++;
+    saveNotificationsToFile();
+}
+
+void showUserNotifications(const char* username) {
+    printf("\n=== Your Notifications ===\n");
+    int count = 0;
+    
+    for (int i = 0; i < notificationCount; i++) {
+        if (strcmp(notifications[i].username, username) == 0) {
+            count++;
+            char timeStr[20];
+            strftime(timeStr, 20, "%Y-%m-%d %H:%M:%S", localtime(&notifications[i].timestamp));
+            
+            printf("%d. [%s] %s - %s\n", 
+                   count,
+                   notifications[i].isRead ? "Read" : "Unread",
+                   notifications[i].message,
+                   timeStr);
+        }
+    }
+    
+    if (count == 0) {
+        printf("No notifications found.\n");
+    }
+}
+
+void markNotificationAsRead(const char* username, int index) {
+    int userNotifCount = 0;
+    
+    for (int i = 0; i < notificationCount; i++) {
+        if (strcmp(notifications[i].username, username) == 0) {
+            userNotifCount++;
+            if (userNotifCount == index) {
+                notifications[i].isRead = 1;
+                saveNotificationsToFile();
+                printf("Notification marked as read.\n");
+                return;
+            }
+        }
+    }
+    
+    printf("Invalid notification index.\n");
+}
+
+void deleteNotification(const char* username, int index) {
+    int userNotifCount = 0;
+    int toDelete = -1;
+    
+    for (int i = 0; i < notificationCount; i++) {
+        if (strcmp(notifications[i].username, username) == 0) {
+            userNotifCount++;
+            if (userNotifCount == index) {
+                toDelete = i;
+                break;
+            }
+        }
+    }
+    
+    if (toDelete == -1) {
+        printf("Invalid notification index.\n");
+        return;
+    }
+    
+    for (int i = toDelete; i < notificationCount - 1; i++) {
+        notifications[i] = notifications[i + 1];
+    }
+    
+    notificationCount--;
+    saveNotificationsToFile();
+    printf("Notification deleted.\n");
+}
+
+int processPayment(const char* username, float amount) {
+    printf("\n=== Payment Processing ===\n");
+    printf("Amount to pay: RM%.2f\n", amount);
+    
+    printf("\nSelect payment method:\n");
+    printf("1. Credit/Debit Card\n");
+    printf("2. Digital Wallet\n");
+    printf("Choice: ");
+    
+    int choice;
+    scanf("%d", &choice);
+    
+    if (choice < 1 || choice > PAYMENT_METHODS) {
+        printf("Invalid payment method.\n");
+        return 0;
+    }
+    
+    PaymentMethod method = (PaymentMethod)(choice - 1);
+    
+    switch (method) {
+        case PAYMENT_CARD: {
+            CardDetails card;
+            printf("\nEnter card number: ");
+            scanf("%s", card.cardNumber);
+            printf("Enter expiry date (MM/YY): ");
+            scanf("%s", card.expiryDate);
+            printf("Enter CVV: ");
+            scanf("%s", card.cvv);
+            
+            if (strlen(card.cardNumber) < 16 || strlen(card.cvv) != 3) {
+                printf("Invalid card details.\n");
+                return 0;
+            }
+            
+            printf("\nProcessing card payment...\n");
+            break;
+        }
+        
+        case PAYMENT_WALLET: {
+            DigitalWallet wallet;
+            printf("\nEnter wallet ID: ");
+            scanf("%s", wallet.walletId);
+            printf("Enter registered phone number: ");
+            scanf("%s", wallet.phoneNumber);
+            
+            if (strlen(wallet.walletId) < 5 || strlen(wallet.phoneNumber) < 10) {
+                printf("Invalid wallet details.\n");
+                return 0;
+            }
+            
+            printf("\nProcessing digital wallet payment...\n");
+            break;
+        }
+    }
+    
+    printf("Payment of RM%.2f successful!\n", amount);
+    
+    char notifMsg[NOTIF_MSG_LEN];
+    snprintf(notifMsg, NOTIF_MSG_LEN, "Payment of RM%.2f for ticket booking completed", amount);
+    addNotification(username, notifMsg);
+    
+    return 1;
+}
+
+void notificationMenu() {
+    int choice;
+    do {
+        showUserNotifications(current_user);
+        
+        printf("\n1. Mark as read\n");
+        printf("2. Delete notification\n");
+        printf("3. Back\n");
+        printf("Choice: ");
+        scanf("%d", &choice);
+        
+        if (choice == 1 || choice == 2) {
+            printf("Enter notification number: ");
+            int notifNum;
+            scanf("%d", &notifNum);
+            
+            if (choice == 1) {
+                markNotificationAsRead(current_user, notifNum);
+            } else {
+                deleteNotification(current_user, notifNum);
+            }
+        }
+    } while (choice != 3);
 }
 
 void registerUser() {
@@ -141,6 +342,7 @@ void addFrequentRoute() {
 int main() {
     int choice;
     loadUsersFromFile();
+    loadNotificationsFromFile();
     FILE *file = fopen("tickets.txt", "r");
     if (file) {
         while (fscanf(file, "%s %s %s %d", tickets[ticketCount].name, tickets[ticketCount].route,
@@ -157,7 +359,8 @@ int main() {
         printf("3. View Profile\n");
         printf("4. Update Profile\n");
         printf("5. Add Frequent Route\n");
-        printf("6. Exit\n");
+        printf("6. View Notifications\n");
+        printf("7. Exit\n");
         printf("Choose an option: ");
         scanf("%d", &choice);
 
@@ -177,7 +380,8 @@ int main() {
             case 3: viewProfile(); break;
             case 4: updateProfile(); break;
             case 5: addFrequentRoute(); break;
-            case 6: printf("Exiting...\n"); return 0;
+            case 6: notificationMenu(); break;
+            case 7: printf("Exiting...\n"); return 0;
             default: printf("Invalid choice! Try again.\n");
         }
     }

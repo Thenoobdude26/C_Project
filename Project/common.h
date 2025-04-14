@@ -5,6 +5,11 @@
 #define MAX_TICKETS 10
 #define MAX_USERS 100
 #define MAX_FREQUENT_ROUTES 3
+#define MAX_NOTIFICATIONS 50
+#define NOTIF_MSG_LEN 100
+#define PAYMENT_METHODS 2
+
+#include <time.h>
 
 typedef struct {
     int id;
@@ -20,6 +25,29 @@ typedef struct {
     int seatNumber;
 } Ticket;
 
+typedef struct {
+    char username[50];
+    char message[NOTIF_MSG_LEN];
+    time_t timestamp;
+    int isRead;
+} Notification;
+
+typedef struct {
+    char cardNumber[20];
+    char expiryDate[10];
+    char cvv[5];
+} CardDetails;
+
+typedef struct {
+    char walletId[20];
+    char phoneNumber[15];
+} DigitalWallet;
+
+typedef enum {
+    PAYMENT_CARD,
+    PAYMENT_WALLET
+} PaymentMethod;
+
 struct User {
     char username[50];
     char password[50];
@@ -31,12 +59,15 @@ struct User {
 };
 
 extern Route routes[MAX_ROUTES];
-extern int routeCount;  // Added: Shared route count
+extern int routeCount;
 extern Ticket tickets[MAX_TICKETS];
 extern int ticketCount;
 extern struct User users[MAX_USERS];
 extern int user_count;
 extern char current_user[50];
+extern int current_user_is_admin;
+extern Notification notifications[MAX_NOTIFICATIONS];
+extern int notificationCount;
 
 // Ticket function declarations (from ticket.c)
 void mainMenu();
@@ -52,5 +83,14 @@ void adminViewSchedule();
 void adminCancelTicket();
 void manageBusSchedules();
 void generateReports();
+void notifyRouteChange(const char* action, const char* routeInfo);
+
+// Notification and Payment function declarations (from login.c)
+void addNotification(const char* username, const char* message);
+void showUserNotifications(const char* username);
+void markNotificationAsRead(const char* username, int index);
+void deleteNotification(const char* username, int index);
+void notificationMenu();
+int processPayment(const char* username, float amount);
 
 #endif

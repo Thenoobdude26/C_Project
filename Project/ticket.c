@@ -3,9 +3,33 @@
 #include "common.h"
 
 Route routes[MAX_ROUTES];
-int routeCount = 0;  // Define here (shared with admin.c)
+int routeCount = 0;
 Ticket tickets[MAX_TICKETS];
 int ticketCount = 0;
+
+// Load routes from file at startup
+void loadRoutesFromFile() {
+    FILE *file = fopen("routes.txt", "r");
+    if (file == NULL) return;
+    while (fscanf(file, "%d %[^\n] %[^\n] %d", &routes[routeCount].id, routes[routeCount].route,
+                  routes[routeCount].time, &routes[routeCount].seatsAvailable) != EOF) {
+        routeCount++;
+    }
+    fclose(file);
+}
+
+// Save routes to file after modifications
+void saveRoutesToFile() {
+    FILE *file = fopen("routes.txt", "w");
+    if (file == NULL) {
+        printf("Error saving routes to file!\n");
+        return;
+    }
+    for (int i = 0; i < routeCount; i++) {
+        fprintf(file, "%d %s %s %d\n", routes[i].id, routes[i].route, routes[i].time, routes[i].seatsAvailable);
+    }
+    fclose(file);
+}
 
 void mainMenu() {
     char choice;
@@ -13,11 +37,12 @@ void mainMenu() {
         printf(
 "     Welcome to the Bus Reservation System!       \n"
 "==================================================\n"
-"1. View Routes & Schedules                      \n"
-"2. Book a Ticket                                 \n"
-"3. Cancel a Ticket                                \n"
-"4. View My Tickets                                \n"
-"5. Exit to Main Menu                             \n"
+"1. View Routes & Schedules\n"
+"2. Book a Ticket\n"
+"3. Cancel a Ticket\n"
+"4. View My Tickets\n"
+"5. View Notifications\n"
+"6. Back to User Menu\n"
 "==================================================\n");
         printf("Enter your choice: ");
         scanf(" %c", &choice);
@@ -27,7 +52,8 @@ void mainMenu() {
             case '2': bookTicket(); break;
             case '3': cancelTicket(); break;
             case '4': displayTickets(); break;
-            case '5': printf("Returning to main menu...\n"); return;
+            case '5': notificationMenu(); break;
+            case '6': printf("Returning to user menu...\n"); return;
             default: printf("Invalid choice! Please try again.\n");
         }
     }
@@ -46,43 +72,12 @@ void viewRoutes() {
 }
 
 void bookTicket() {
+    viewRoutes();
+    if (routeCount == 0) return;
+
+    printf("\nEnter the route ID to book: ");
     int routeChoice;
-    int userIndex = -1;
-    for (int i = 0; i < user_count; i++) {
-        if (strcmp(users[i].username, current_user) == 0) {
-            userIndex = i;
-            break;
-        }
-    }
-
-    if (userIndex != -1 && users[userIndex].frequentRouteCount > 0) {
-        printf("\nYour Frequent Routes:\n");
-        for (int i = 0; i < users[userIndex].frequentRouteCount; i++) {
-            printf("%d. %s\n", i + 1, users[userIndex].frequentRoutes[i]);
-        }
-        printf("0. Choose from all routes\n");
-        printf("Select a frequent route (or 0): ");
-        scanf("%d", &routeChoice);
-        if (routeChoice > 0 && routeChoice <= users[userIndex].frequentRouteCount) {
-            for (int i = 0; i < routeCount; i++) {
-                if (strcmp(routes[i].route, users[userIndex].frequentRoutes[routeChoice - 1]) == 0) {
-                    routeChoice = routes[i].id;
-                    break;
-                }
-            }
-        } else {
-            routeChoice = 0;
-        }
-    } else {
-        routeChoice = 0;
-    }
-
-    if (routeChoice == 0) {
-        viewRoutes();
-        if (routeCount == 0) return;
-        printf("\nEnter the route ID to book: ");
-        scanf("%d", &routeChoice);
-    }
+    scanf("%d", &routeChoice);
 
     int routeIndex = -1;
     for (int i = 0; i < routeCount; i++) {
@@ -97,6 +92,12 @@ void bookTicket() {
         return;
     }
 
+    float ticketPrice = 20.0f;
+    if (!processPayment(current_user, ticketPrice)) {
+        printf("Payment failed. Booking cancelled.\n");
+        return;
+    }
+
     Ticket newTicket;
     strcpy(newTicket.name, current_user);
     strcpy(newTicket.route, routes[routeIndex].route);
@@ -105,12 +106,15 @@ void bookTicket() {
 
     tickets[ticketCount++] = newTicket;
     FILE *file = fopen("tickets.txt", "w");
-    if (file) {
-        for (int i = 0; i < ticketCount; i++) {
-            fprintf(file, "%s %s %s %d\n", tickets[i].name, tickets[i].route, tickets[i].time, tickets[i].seatNumber);
-        }
-        fclose(file);
+    if (file == NULL) {
+        printf("Error saving tickets to file!\n");
+        return;
     }
+    for (int i = 0; i < ticketCount; i++) {
+        fprintf(file, "%s %s %s %d\n", tickets[i].name, tickets[i].route, tickets[i].time, tickets[i].seatNumber);
+    }
+    fclose(file);
+    saveRoutesToFile();  // Save updated seats
     printf("Booking successful! Your seat number is %d.\n", newTicket.seatNumber);
 }
 
@@ -133,17 +137,23 @@ void cancelTicket() {
                 break;
             }
         }
+        char notifMsg[NOTIF_MSG_LEN];
+        snprintf(notifMsg, NOTIF_MSG_LEN, "Ticket for route %s at %s canceled", tickets[ticketNum].route, tickets[ticketNum].time);
+        addNotification(current_user, notifMsg);
         for (int j = ticketNum; j < ticketCount - 1; j++) {
             tickets[j] = tickets[j + 1];
         }
         ticketCount--;
         FILE *file = fopen("tickets.txt", "w");
-        if (file) {
-            for (int i = 0; i < ticketCount; i++) {
-                fprintf(file, "%s %s %s %d\n", tickets[i].name, tickets[i].route, tickets[i].time, tickets[i].seatNumber);
-            }
-            fclose(file);
+        if (file == NULL) {
+            printf("Error saving tickets to file!\n");
+            return;
         }
+        for (int i = 0; i < ticketCount; i++) {
+            fprintf(file, "%s %s %s %d\n", tickets[i].name, tickets[i].route, tickets[i].time, tickets[i].seatNumber);
+        }
+        fclose(file);
+        saveRoutesToFile();  // Save updated seats
         printf("Ticket canceled successfully!\n");
     } else {
         printf("No ticket found under your account or invalid ticket number.\n");

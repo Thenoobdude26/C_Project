@@ -64,12 +64,24 @@ void adminBookTicket() {
 
     tickets[ticketCount++] = newTicket;
     FILE *file = fopen("tickets.txt", "w");
-    if (file) {
-        for (int i = 0; i < ticketCount; i++) {
-            fprintf(file, "%s %s %s %d\n", tickets[i].name, tickets[i].route, tickets[i].time, tickets[i].seatNumber);
-        }
-        fclose(file);
+    if (file == NULL) {
+        printf("Error saving tickets to file!\n");
+        return;
     }
+    for (int i = 0; i < ticketCount; i++) {
+        fprintf(file, "%s %s %s %d\n", tickets[i].name, tickets[i].route, tickets[i].time, tickets[i].seatNumber);
+    }
+    fclose(file);
+    // Save updated seats
+    FILE *routeFile = fopen("routes.txt", "w");
+    if (routeFile == NULL) {
+        printf("Error saving routes to file!\n");
+        return;
+    }
+    for (int i = 0; i < routeCount; i++) {
+        fprintf(routeFile, "%d %s %s %d\n", routes[i].id, routes[i].route, routes[i].time, routes[i].seatsAvailable);
+    }
+    fclose(routeFile);
     printf("Booking successful! Seat number: %d\n", newTicket.seatNumber);
 }
 
@@ -121,12 +133,24 @@ void adminCancelTicket() {
         }
         ticketCount--;
         FILE *file = fopen("tickets.txt", "w");
-        if (file) {
-            for (int i = 0; i < ticketCount; i++) {
-                fprintf(file, "%s %s %s %d\n", tickets[i].name, tickets[i].route, tickets[i].time, tickets[i].seatNumber);
-            }
-            fclose(file);
+        if (file == NULL) {
+            printf("Error saving tickets to file!\n");
+            return;
         }
+        for (int i = 0; i < ticketCount; i++) {
+            fprintf(file, "%s %s %s %d\n", tickets[i].name, tickets[i].route, tickets[i].time, tickets[i].seatNumber);
+        }
+        fclose(file);
+        // Save updated seats
+        FILE *routeFile = fopen("routes.txt", "w");
+        if (routeFile == NULL) {
+            printf("Error saving routes to file!\n");
+            return;
+        }
+        for (int i = 0; i < routeCount; i++) {
+            fprintf(routeFile, "%d %s %s %d\n", routes[i].id, routes[i].route, routes[i].time, routes[i].seatsAvailable);
+        }
+        fclose(routeFile);
         printf("Ticket canceled successfully!\n");
     } else {
         printf("Invalid ticket number.\n");
@@ -141,16 +165,29 @@ void manageBusSchedules() {
     if (option == '1' && routeCount < MAX_ROUTES) {
         printf("Enter Bus ID: ");
         scanf("%d", &routes[routeCount].id);
+        getchar();  // Clear newline
         printf("Enter Route: ");
-        scanf(" %[^\n]", routes[routeCount].route);
+        scanf("%[^\n]", routes[routeCount].route);
+        getchar();
         printf("Enter Time (e.g., 07:00 AM): ");
-        scanf(" %[^\n]", routes[routeCount].time);
+        scanf("%[^\n]", routes[routeCount].time);
+        getchar();
         printf("Enter Seats Available: ");
         scanf("%d", &routes[routeCount].seatsAvailable);
-        char routeInfo[150];
-        snprintf(routeInfo, 150, "%s at %s with %d seats", routes[routeCount].route, routes[routeCount].time, routes[routeCount].seatsAvailable);
+        char routeInfo[NOTIF_MSG_LEN];
+        snprintf(routeInfo, NOTIF_MSG_LEN, "%s at %s", routes[routeCount].route, routes[routeCount].time);
         routeCount++;
         notifyRouteChange("added", routeInfo);
+        // Save routes
+        FILE *file = fopen("routes.txt", "w");
+        if (file == NULL) {
+            printf("Error saving routes to file!\n");
+            return;
+        }
+        for (int i = 0; i < routeCount; i++) {
+            fprintf(file, "%d %s %s %d\n", routes[i].id, routes[i].route, routes[i].time, routes[i].seatsAvailable);
+        }
+        fclose(file);
         printf("Schedule added!\n");
     } else if (option == '2') {
         int id, found = 0;
@@ -158,17 +195,28 @@ void manageBusSchedules() {
         scanf("%d", &id);
         for (int i = 0; i < routeCount; i++) {
             if (routes[i].id == id) {
-                char oldRoute[50];
-                strcpy(oldRoute, routes[i].route);
+                getchar();
                 printf("Enter new Route: ");
-                scanf(" %[^\n]", routes[i].route);
+                scanf("%[^\n]", routes[i].route);
+                getchar();
                 printf("Enter new Time (e.g., 07:00 AM): ");
-                scanf(" %[^\n]", routes[i].time);
+                scanf("%[^\n]", routes[i].time);
+                getchar();
                 printf("Enter new Seats Available: ");
                 scanf("%d", &routes[i].seatsAvailable);
-                char routeInfo[150];
-                snprintf(routeInfo, 150, "%s to %s at %s with %d seats", oldRoute, routes[i].route, routes[i].time, routes[i].seatsAvailable);
+                char routeInfo[NOTIF_MSG_LEN];
+                snprintf(routeInfo, NOTIF_MSG_LEN, "%s at %s", routes[i].route, routes[i].time);
                 notifyRouteChange("updated", routeInfo);
+                // Save routes
+                FILE *file = fopen("routes.txt", "w");
+                if (file == NULL) {
+                    printf("Error saving routes to file!\n");
+                    return;
+                }
+                for (int i = 0; i < routeCount; i++) {
+                    fprintf(file, "%d %s %s %d\n", routes[i].id, routes[i].route, routes[i].time, routes[i].seatsAvailable);
+                }
+                fclose(file);
                 printf("Schedule updated!\n");
                 found = 1;
                 break;
@@ -181,11 +229,21 @@ void manageBusSchedules() {
         scanf("%d", &id);
         for (int i = 0; i < routeCount; i++) {
             if (routes[i].id == id) {
-                char routeInfo[150];
-                snprintf(routeInfo, 150, "%s at %s", routes[i].route, routes[i].time);
+                char routeInfo[NOTIF_MSG_LEN];
+                snprintf(routeInfo, NOTIF_MSG_LEN, "%s at %s", routes[i].route, routes[i].time);
                 routes[i] = routes[routeCount - 1];
                 routeCount--;
                 notifyRouteChange("removed", routeInfo);
+                // Save routes
+                FILE *file = fopen("routes.txt", "w");
+                if (file == NULL) {
+                    printf("Error saving routes to file!\n");
+                    return;
+                }
+                for (int i = 0; i < routeCount; i++) {
+                    fprintf(file, "%d %s %s %d\n", routes[i].id, routes[i].route, routes[i].time, routes[i].seatsAvailable);
+                }
+                fclose(file);
                 printf("Schedule deleted!\n");
                 found = 1;
                 break;

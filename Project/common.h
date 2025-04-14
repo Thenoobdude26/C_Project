@@ -6,7 +6,7 @@
 #define MAX_USERS 100
 #define MAX_FREQUENT_ROUTES 3
 #define MAX_NOTIFICATIONS 50
-#define NOTIF_MSG_LEN 100
+#define NOTIF_MSG_LEN 120 
 #define PAYMENT_METHODS 2
 
 #include <time.h>
@@ -66,8 +66,6 @@ extern struct User users[MAX_USERS];
 extern int user_count;
 extern char current_user[50];
 extern int current_user_is_admin;
-extern Notification notifications[MAX_NOTIFICATIONS];
-extern int notificationCount;
 
 // Ticket function declarations (from ticket.c)
 void mainMenu();
